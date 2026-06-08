@@ -17,7 +17,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script type="application/ld+json">
   {
@@ -86,6 +86,7 @@
       --radius: 8px;
       --max: 1180px;
       --header-height: 82px;
+      --font-main: "Poppins", "Segoe UI", Arial, sans-serif;
     }
 
     * {
@@ -100,9 +101,11 @@
       margin: 0;
       background: var(--black);
       color: var(--white);
-      font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+      font-family: var(--font-main);
       line-height: 1.65;
       overflow-x: hidden;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
 
     body.menu-open {
@@ -176,9 +179,10 @@
     h2,
     h3 {
       margin: 0;
-      font-family: "Playfair Display", Georgia, serif;
-      line-height: 1.06;
+      font-family: var(--font-main);
+      line-height: 1.14;
       letter-spacing: 0;
+      font-weight: 700;
     }
 
     h1 {
@@ -247,7 +251,7 @@
       border: 1px solid rgba(212, 175, 55, 0.58);
       border-radius: 50%;
       color: var(--gold);
-      font-family: "Playfair Display", Georgia, serif;
+      font-family: var(--font-main);
       font-size: 1.28rem;
       font-weight: 800;
       box-shadow: 0 0 28px rgba(212, 175, 55, 0.18);
@@ -305,7 +309,7 @@
 
     .brand-name {
       color: var(--white);
-      font-family: "Playfair Display", Georgia, serif;
+      font-family: var(--font-main);
       font-size: 1.1rem;
       font-weight: 800;
     }
@@ -392,21 +396,22 @@
     }
 
     .hero {
-      min-height: 90svh;
+      min-height: 92svh;
       display: flex;
       align-items: center;
-      padding: 142px 0 158px;
+      padding: calc(var(--header-height) + 56px) 0 72px;
       overflow: hidden;
       border-bottom: 1px solid rgba(212, 175, 55, 0.18);
     }
 
     .hero-bg {
       position: absolute;
-      inset: -10% 0 -12%;
+      inset: -8% 0 -10%;
       width: 100%;
-      height: 122%;
+      height: 118%;
       object-fit: cover;
-      opacity: 0.68;
+      opacity: 0.74;
+      filter: saturate(0.94) contrast(1.04);
       transform: translate3d(0, 0, 0);
       will-change: transform;
     }
@@ -416,8 +421,8 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(90deg, rgba(17, 17, 17, 0.96) 0%, rgba(17, 17, 17, 0.72) 46%, rgba(17, 17, 17, 0.28) 100%),
-        linear-gradient(180deg, rgba(17, 17, 17, 0.36) 0%, rgba(17, 17, 17, 0.92) 100%);
+        linear-gradient(90deg, rgba(12, 12, 12, 0.96) 0%, rgba(12, 12, 12, 0.78) 42%, rgba(12, 12, 12, 0.46) 68%, rgba(12, 12, 12, 0.68) 100%),
+        linear-gradient(180deg, rgba(12, 12, 12, 0.34) 0%, rgba(12, 12, 12, 0.82) 100%);
       z-index: 1;
     }
 
@@ -434,32 +439,41 @@
     .hero-content {
       position: relative;
       z-index: 3;
-      max-width: 820px;
+      max-width: 760px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hero h1 {
+      max-width: 760px;
+      font-size: 4rem;
+      line-height: 1.08;
     }
 
     .hero-logo-card {
-      width: min(300px, 86vw);
-      margin-bottom: 24px;
+      width: min(250px, 76vw);
+      margin-bottom: 30px;
       overflow: hidden;
       border: 1px solid rgba(212, 175, 55, 0.46);
       border-radius: 8px;
-      background: rgba(13, 13, 13, 0.72);
-      box-shadow: 0 22px 58px rgba(0, 0, 0, 0.36), 0 0 34px rgba(212, 175, 55, 0.16);
+      background: rgba(13, 13, 13, 0.82);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.34), 0 0 28px rgba(212, 175, 55, 0.14);
       backdrop-filter: blur(10px);
     }
 
     .hero-logo-card img {
-      height: 164px;
+      height: 126px;
       object-fit: cover;
       object-position: center;
     }
 
     .hero-logo-card span {
       display: block;
-      padding: 10px 14px;
+      padding: 9px 14px;
       border-top: 1px solid rgba(212, 175, 55, 0.28);
       color: var(--gold);
-      font-size: 0.78rem;
+      font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-align: center;
@@ -470,11 +484,11 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
       color: var(--gold);
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
     }
 
@@ -486,41 +500,52 @@
     }
 
     .hero p {
-      max-width: 620px;
-      margin-top: 22px;
-      font-size: 1.1rem;
+      max-width: 580px;
+      margin-top: 20px;
+      font-size: 1.04rem;
       color: rgba(255, 255, 255, 0.82);
     }
 
     .quick-actions {
-      position: absolute;
-      left: 50%;
-      bottom: 92px;
-      z-index: 4;
+      position: static;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 12px;
-      width: min(620px, calc(100% - 48px));
-      transform: translateX(-50%);
+      width: min(560px, 100%);
+      margin-top: 32px;
+      transform: none;
     }
 
     .quick-actions .quick-btn {
-      flex: 1 1 0;
+      flex: 0 1 250px;
       width: auto;
-      min-width: 250px;
-      min-height: 56px;
+      min-width: 220px;
+      min-height: 54px;
       border-radius: 8px;
-      border-color: rgba(255, 255, 255, 0.14);
-      background: #ff8a1f;
-      color: #ffffff;
-      font-size: 0.98rem;
-      box-shadow: 0 18px 34px rgba(255, 138, 31, 0.26), 0 8px 22px rgba(0, 0, 0, 0.38);
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--white);
+      font-size: 0.94rem;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    .quick-actions .quick-btn:first-child {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: #17120a;
+      box-shadow: 0 16px 36px rgba(212, 175, 55, 0.24);
     }
 
     .quick-actions .quick-btn:hover {
-      background: #ff9b38;
-      box-shadow: 0 22px 44px rgba(255, 138, 31, 0.32), 0 12px 28px rgba(0, 0, 0, 0.42);
+      border-color: rgba(212, 175, 55, 0.58);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+    }
+
+    .quick-actions .quick-btn:first-child:hover {
+      background: #e0bd49;
+      box-shadow: 0 20px 44px rgba(212, 175, 55, 0.3);
     }
 
     .btn {
@@ -566,10 +591,10 @@
     .hero-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 18px;
-      margin-top: 48px;
+      gap: 14px 18px;
+      margin-top: 26px;
       color: rgba(255, 255, 255, 0.74);
-      font-size: 0.86rem;
+      font-size: 0.84rem;
     }
 
     .hero-meta span {
@@ -913,7 +938,7 @@
       place-items: center;
       padding: 28px;
       color: rgba(255, 255, 255, 0.58);
-      font-family: "Playfair Display", Georgia, serif;
+      font-family: var(--font-main);
       font-size: 1.7rem;
       text-align: center;
       opacity: 0;
@@ -1101,7 +1126,7 @@
 
     .order-item h3 {
       margin-bottom: 7px;
-      font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+      font-family: var(--font-main);
       font-size: 1rem;
       line-height: 1.3;
     }
@@ -1380,11 +1405,11 @@
 
     .gallery-grid {
       display: grid;
-      grid-template-columns: 1.15fr 1.15fr 0.95fr 0.95fr;
-      grid-template-rows: 240px 240px 220px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-rows: 240px 240px 230px;
       grid-template-areas:
-        "premium premium grill ambience"
-        "premium premium grill cocktails"
+        "premium premium ambience cocktails"
+        "premium premium grill grill"
         "sushi sushi chef chef";
       gap: 18px;
     }
@@ -1437,7 +1462,32 @@
     .gallery-item img {
       height: 100%;
       object-fit: cover;
+      object-position: center;
       transition: transform 520ms ease, opacity 220ms ease;
+    }
+
+    .gallery-item.feature img {
+      object-position: 42% center;
+    }
+
+    .gallery-item.grill img {
+      object-position: 52% 54%;
+    }
+
+    .gallery-item.ambience img {
+      object-position: center 58%;
+    }
+
+    .gallery-item.cocktails img {
+      object-position: 50% 58%;
+    }
+
+    .gallery-item.sushi img {
+      object-position: center 46%;
+    }
+
+    .gallery-item.chef img {
+      object-position: center 42%;
     }
 
     .gallery-item:hover img {
@@ -1457,10 +1507,10 @@
     .gallery-caption {
       display: block;
       color: var(--white);
-      font-family: "Playfair Display", Georgia, serif;
+      font-family: var(--font-main);
       font-size: 1.18rem;
       font-weight: 800;
-      line-height: 1.12;
+      line-height: 1.18;
     }
 
     .gallery-meta {
@@ -1483,8 +1533,8 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.02) 18%, rgba(0, 0, 0, 0.8) 100%),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.3), transparent 58%);
+        linear-gradient(180deg, rgba(0, 0, 0, 0.02) 10%, rgba(0, 0, 0, 0.18) 46%, rgba(0, 0, 0, 0.82) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.44), rgba(0, 0, 0, 0.08) 58%);
       pointer-events: none;
     }
 
@@ -1892,6 +1942,10 @@
         font-size: 3.7rem;
       }
 
+      .hero h1 {
+        font-size: 3.45rem;
+      }
+
       h2 {
         font-size: 2.6rem;
       }
@@ -1962,9 +2016,9 @@
       }
 
       .hero {
-        min-height: 86svh;
-        padding-top: 124px;
-        padding-bottom: 156px;
+        min-height: auto;
+        padding-top: calc(var(--header-height) + 52px);
+        padding-bottom: 48px;
       }
 
       .about-grid {
@@ -1986,11 +2040,11 @@
 
       .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: 300px 220px 220px 230px;
+        grid-template-rows: 300px 230px 220px 230px;
         grid-template-areas:
           "premium premium"
-          "grill ambience"
-          "grill cocktails"
+          "grill grill"
+          "ambience cocktails"
           "sushi chef";
       }
     }
@@ -2032,6 +2086,10 @@
         font-size: 2.52rem;
       }
 
+      .hero h1 {
+        font-size: 2.62rem;
+      }
+
       h2 {
         font-size: 2.1rem;
       }
@@ -2040,18 +2098,23 @@
         font-size: 1rem;
       }
 
+      .hero {
+        padding-bottom: 36px;
+      }
+
       .hero-logo-card {
-        width: min(260px, 86vw);
+        width: min(220px, 78vw);
+        margin-bottom: 24px;
       }
 
       .hero-logo-card img {
-        height: 134px;
+        height: 108px;
       }
 
       .quick-actions {
         display: grid;
-        bottom: 22px;
-        width: min(310px, calc(100% - 32px));
+        width: min(330px, 100%);
+        margin-top: 28px;
       }
 
       .quick-actions .quick-btn {
@@ -2253,6 +2316,20 @@
           <span class="hero-kicker">Kinza Grill &amp; Sushi</span>
           <h1>Authentische japanische Küche in Deutschland</h1>
           <p>Frisches Sushi, Premium-Grillgerichte und einzigartige Geschmackserlebnisse.</p>
+          <div class="quick-actions" aria-label="Schnelle Aktionen">
+            <a class="btn quick-btn" href="#bestellen">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 4h14v16H5V4ZM8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              Jetzt bestellen
+            </a>
+            <a class="btn quick-btn" href="#reservierung">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M8 2v4M16 2v4M3.5 9h17M6 5h12a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5v-11A2.5 2.5 0 0 1 6 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              Tisch reservieren
+            </a>
+          </div>
           <div class="hero-meta" aria-label="Restaurantdaten">
             <span>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -2269,20 +2346,6 @@
             </span>
           </div>
         </div>
-      </div>
-      <div class="quick-actions" aria-label="Schnelle Aktionen">
-        <a class="btn quick-btn" href="#bestellen">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M5 4h14v16H5V4ZM8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-          Jetzt bestellen
-        </a>
-        <a class="btn quick-btn" href="#reservierung">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M8 2v4M16 2v4M3.5 9h17M6 5h12a2.5 2.5 0 0 1 2.5 2.5v11A2.5 2.5 0 0 1 18 21H6a2.5 2.5 0 0 1-2.5-2.5v-11A2.5 2.5 0 0 1 6 5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-          Tisch reservieren
-        </a>
       </div>
     </section>
 
