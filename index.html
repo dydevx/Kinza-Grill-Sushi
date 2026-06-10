@@ -2561,7 +2561,7 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="eyebrow">Bestellen</span>
-          <h2>Gerichte auswählen und PDF-Rechnung senden</h2>
+          <h2>Gerichte auswählen und Bestellung senden</h2>
           <p>Alle bestellbaren Positionen aus der aktuellen Kinza PDF-Speisekarte sind hier als Schnellwahl gelistet.</p>
         </div>
 
@@ -2607,7 +2607,7 @@
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                PDF-Rechnung per E-Mail
+                Bestellung per E-Mail
               </button>
               <span class="order-message" id="orderMessage" role="status" aria-live="polite"></span>
             </form>
@@ -2921,7 +2921,6 @@
     <button class="lightbox-control lightbox-next" type="button" id="lightboxNext" aria-label="Nächstes Bild">›</button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>
     const header = document.getElementById("siteHeader");
     const hamburger = document.getElementById("hamburger");
@@ -3195,7 +3194,6 @@
     ].forEach(([name, price]) => addOrderItem("Alkoholische Getränke", "", name, price));
 
     const priceFormatter = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
-    const pdfNumberFormatter = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const normalizeSearch = (value) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const orderCatalog = orderItemData.map((item, index) => ({
       ...item,
@@ -3285,8 +3283,18 @@
     });
 
     function openMailDraft(subject, body) {
-      const mailtoLink = `mailto:${mailRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailtoLink;
+      const gmailLink = new URL("https://mail.google.com/mail/");
+      gmailLink.searchParams.set("view", "cm");
+      gmailLink.searchParams.set("fs", "1");
+      gmailLink.searchParams.set("to", mailRecipient);
+      gmailLink.searchParams.set("su", subject);
+      gmailLink.searchParams.set("body", body);
+
+      const gmailWindow = window.open(gmailLink.toString(), "_blank", "noopener,noreferrer");
+      if (!gmailWindow) {
+        const mailtoLink = `mailto:${mailRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoLink;
+      }
     }
 
     function formatDateTime(date) {
@@ -3307,7 +3315,6 @@
 
       return {
         createdAt: formatDateTime(now),
-        fileName: `kinza-rechnung-${stamp}.pdf`,
         number: `KINZA-${stamp}`
       };
     }
@@ -3323,150 +3330,6 @@
 
     function getOrderTotal(lines) {
       return lines.reduce((sum, line) => sum + (line.item.price * line.quantity), 0);
-    }
-
-    function formatPdfCurrency(value) {
-      return `${pdfNumberFormatter.format(value)} EUR`;
-    }
-
-    function pdfSafeText(value) {
-      return String(value).replace(/\u00a0/g, " ").replace(/€/g, "EUR");
-    }
-
-    function downloadBlob(blob, fileName) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
-
-    async function shareOrderInvoice(file) {
-      if (!file || !navigator.canShare || !navigator.canShare({ files: [file] })) {
-        return false;
-      }
-
-      try {
-        await navigator.share({
-          files: [file],
-          title: "Kinza Bestellung",
-          text: `Bitte senden Sie die PDF-Rechnung an ${mailRecipient}.`
-        });
-        return true;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    function createOrderInvoicePdf(meta, details, lines, total) {
-      const JsPDF = window.jspdf?.jsPDF;
-      if (!JsPDF) return null;
-
-      const doc = new JsPDF({ unit: "mm", format: "a4" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 16;
-      let y = 18;
-
-      const write = (value, x, lineY, options = {}) => {
-        doc.text(pdfSafeText(value), x, lineY, options);
-      };
-      const ensureSpace = (height = 14) => {
-        if (y + height <= pageHeight - margin) return;
-        doc.addPage();
-        y = 18;
-      };
-
-      doc.setTextColor(22, 22, 22);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      write(restaurantInfo.name, margin, y);
-      doc.setFontSize(11);
-      write("Bestellrechnung", pageWidth - margin, y, { align: "right" });
-
-      y += 8;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      write(restaurantInfo.address, margin, y);
-      y += 5;
-      write(`Tel: ${restaurantInfo.phone} | E-Mail: ${restaurantInfo.email}`, margin, y);
-
-      y += 12;
-      doc.setDrawColor(212, 175, 55);
-      doc.line(margin, y, pageWidth - margin, y);
-      y += 9;
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      write("Rechnung", margin, y);
-      write("Kunde", pageWidth / 2, y);
-      y += 6;
-
-      doc.setFont("helvetica", "normal");
-      write(`Nummer: ${meta.number}`, margin, y);
-      write(`Name: ${details.name}`, pageWidth / 2, y);
-      y += 5;
-      write(`Erstellt: ${meta.createdAt}`, margin, y);
-      write(`Telefon: ${details.phone}`, pageWidth / 2, y);
-      y += 5;
-      write(`Abholzeit: ${details.pickup}`, margin, y);
-
-      y += 12;
-      doc.setFont("helvetica", "bold");
-      write("Menge", margin, y);
-      write("Artikel", margin + 22, y);
-      write("Betrag", pageWidth - margin, y, { align: "right" });
-      y += 4;
-      doc.line(margin, y, pageWidth - margin, y);
-      y += 7;
-
-      doc.setFont("helvetica", "normal");
-      lines.forEach(({ item, quantity }) => {
-        const itemName = `${item.code ? `${item.code} - ` : ""}${item.name}`;
-        const itemLines = doc.splitTextToSize(pdfSafeText(itemName), 108);
-        const rowHeight = Math.max(8, itemLines.length * 5 + 2);
-        ensureSpace(rowHeight + 2);
-
-        write(`${quantity}x`, margin, y);
-        doc.text(itemLines, margin + 22, y);
-        write(formatPdfCurrency(item.price * quantity), pageWidth - margin, y, { align: "right" });
-        y += rowHeight;
-      });
-
-      y += 2;
-      ensureSpace(22);
-      doc.line(margin, y, pageWidth - margin, y);
-      y += 8;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      write("Gesamt", margin, y);
-      write(formatPdfCurrency(total), pageWidth - margin, y, { align: "right" });
-
-      if (details.note !== "-") {
-        y += 12;
-        ensureSpace(22);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(10);
-        write("Notiz", margin, y);
-        y += 5;
-        doc.setFont("helvetica", "normal");
-        doc.text(doc.splitTextToSize(pdfSafeText(details.note), pageWidth - margin * 2), margin, y);
-      }
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(90, 90, 90);
-      write("Diese PDF wurde automatisch aus der Online-Bestellung erstellt.", margin, pageHeight - 12);
-
-      const blob = doc.output("blob");
-      const file = typeof File === "function"
-        ? new File([blob], meta.fileName, { type: "application/pdf" })
-        : null;
-
-      return { blob, file };
     }
 
     function setMinReservationDate() {
@@ -3625,7 +3488,7 @@
 
       return [
         "Kinza Grill & Sushi - Bestellung",
-        `Rechnungsnummer: ${meta.number}`,
+        `Bestellnummer: ${meta.number}`,
         `Erstellt: ${meta.createdAt}`,
         `Name: ${details.name}`,
         `Telefon: ${details.phone}`,
@@ -3634,9 +3497,7 @@
         items,
         "",
         `Gesamt: ${priceFormatter.format(total)}`,
-        `Notiz: ${details.note}`,
-        "",
-        "PDF-Rechnung: Die PDF wurde im Browser erstellt. Falls sie nicht automatisch angehängt ist, bitte die heruntergeladene PDF-Datei anhängen."
+        `Notiz: ${details.note}`
       ].join("\n");
     }
 
@@ -3673,7 +3534,7 @@
     }
 
     if (orderForm) {
-      orderForm.addEventListener("submit", async (event) => {
+      orderForm.addEventListener("submit", (event) => {
         event.preventDefault();
         if (!cart.size) {
           if (orderMessage) orderMessage.textContent = "Bitte wählen Sie zuerst mindestens ein Gericht aus.";
@@ -3690,21 +3551,8 @@
           orderSummary.classList.add("is-visible");
         }
 
-        const pdf = createOrderInvoicePdf(meta, details, lines, total);
-        if (pdf) {
-          const shared = await shareOrderInvoice(pdf.file);
-          if (shared) {
-            if (orderMessage) orderMessage.textContent = `PDF-Rechnung wurde geöffnet. Bitte per E-Mail an ${mailRecipient} senden.`;
-            return;
-          }
-
-          downloadBlob(pdf.blob, meta.fileName);
-          if (orderMessage) orderMessage.textContent = "PDF-Rechnung wurde heruntergeladen. Bitte an die geöffnete E-Mail anhängen und absenden.";
-        } else if (orderMessage) {
-          orderMessage.textContent = "PDF konnte nicht erstellt werden. Die E-Mail mit den Bestelldaten wurde geöffnet.";
-        }
-
         openMailDraft(`Bestellung Kinza - ${meta.number}${details.pickup !== "-" ? ` - Abholung ${details.pickup}` : ""}`, summary);
+        if (orderMessage) orderMessage.textContent = "Gmail wurde mit den Bestelldaten geöffnet. Bitte prüfen und senden.";
       });
     }
 
