@@ -2992,9 +2992,20 @@
       publicKey: "YOUR_EMAILJS_PUBLIC_KEY",
       serviceId: "YOUR_EMAILJS_SERVICE_ID",
       restaurantTemplateId: "YOUR_RESTAURANT_TEMPLATE_ID",
-      customerTemplateId: "YOUR_CUSTOMER_TEMPLATE_ID"
+      customerTemplateId: "YOUR_CUSTOMER_TEMPLATE_ID",
+      reservationRestaurantTemplateId: "YOUR_RESERVATION_RESTAURANT_TEMPLATE_ID",
+      reservationCustomerTemplateId: "YOUR_RESERVATION_CUSTOMER_TEMPLATE_ID"
     };
-    const isEmailJsConfigured = Object.values(emailJsConfig).every((value) => value && !value.startsWith("YOUR_"));
+    const isConfiguredValue = (value) => value && !value.startsWith("YOUR_");
+    const hasEmailJsBaseConfig = [emailJsConfig.publicKey, emailJsConfig.serviceId].every(isConfiguredValue);
+    const isOrderEmailJsConfigured = hasEmailJsBaseConfig && [
+      emailJsConfig.restaurantTemplateId,
+      emailJsConfig.customerTemplateId
+    ].every(isConfiguredValue);
+    const isReservationEmailJsConfigured = hasEmailJsBaseConfig && [
+      emailJsConfig.reservationRestaurantTemplateId,
+      emailJsConfig.reservationCustomerTemplateId
+    ].every(isConfiguredValue);
     const restaurantInfo = {
       name: "Kinza Grill & Sushi",
       address: "An der Bahn 1, 76327 Pfinztal",
@@ -3246,7 +3257,7 @@
     const cart = new Map();
     let activeOrderCategory = "Alle";
 
-    if (window.emailjs && isEmailJsConfigured) {
+    if (window.emailjs && hasEmailJsBaseConfig) {
       emailjs.init({ publicKey: emailJsConfig.publicKey });
     }
 
@@ -3387,40 +3398,85 @@
       dateInput.min = new Date(today - timezoneOffset).toISOString().split("T")[0];
     }
 
-    function buildReservationSummary() {
-      const name = document.getElementById("name")?.value.trim() || "-";
-      const phone = document.getElementById("phone")?.value.trim() || "-";
-      const email = document.getElementById("email")?.value.trim() || "-";
-      const date = document.getElementById("date")?.value || "-";
-      const time = document.getElementById("time")?.value || "-";
-      const people = document.getElementById("people")?.value || "-";
-      const message = document.getElementById("message")?.value.trim() || "-";
+    function getReservationDetails() {
+      return {
+        name: document.getElementById("name")?.value.trim() || "-",
+        phone: document.getElementById("phone")?.value.trim() || "-",
+        email: document.getElementById("email")?.value.trim() || "-",
+        date: document.getElementById("date")?.value || "-",
+        time: document.getElementById("time")?.value || "-",
+        people: document.getElementById("people")?.value || "-",
+        message: document.getElementById("message")?.value.trim() || "-"
+      };
+    }
 
+    function buildReservationSummary(details) {
       return [
         "Kinza Grill & Sushi - Reservierungsanfrage",
-        `Name: ${name}`,
-        `Telefon: ${phone}`,
-        `E-Mail: ${email}`,
-        `Datum: ${date}`,
-        `Uhrzeit: ${time}`,
-        `Personen: ${people}`,
+        `Name: ${details.name}`,
+        `Telefon: ${details.phone}`,
+        `E-Mail: ${details.email}`,
+        `Datum: ${details.date}`,
+        `Uhrzeit: ${details.time}`,
+        `Personen: ${details.people}`,
         "",
-        `Nachricht: ${message}`
+        `Nachricht: ${details.message}`
       ].join("\n");
+    }
+
+    function buildReservationEmailParams(details, summary) {
+      return {
+        restaurant_email: restaurantInfo.email,
+        restaurant_name: restaurantInfo.name,
+        restaurant_phone: restaurantInfo.phone,
+        customer_name: details.name,
+        customer_phone: details.phone,
+        customer_email: details.email,
+        reservation_date: details.date,
+        reservation_time: details.time,
+        reservation_people: details.people,
+        reservation_message: details.message,
+        reservation_summary: summary,
+        created_at: formatDateTime(new Date()),
+        reply_to: details.email
+      };
+    }
+
+    async function sendReservationEmails(params) {
+      if (!window.emailjs || !isReservationEmailJsConfigured) {
+        throw new Error("EmailJS reservation is not configured");
+      }
+
+      await emailjs.send(emailJsConfig.serviceId, emailJsConfig.reservationRestaurantTemplateId, params);
+      await wait(1100);
+      await emailjs.send(emailJsConfig.serviceId, emailJsConfig.reservationCustomerTemplateId, params);
     }
 
     setMinReservationDate();
 
     if (form) {
-      form.addEventListener("submit", (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const summary = buildReservationSummary();
-        const date = document.getElementById("date")?.value || "";
-        const time = document.getElementById("time")?.value || "";
-        if (formMessage) formMessage.textContent = "Ihre E-Mail-App wurde geöffnet. Bitte senden Sie die Reservierungsanfrage dort ab.";
-        openMailDraft(`Reservierungsanfrage Kinza${date ? ` - ${date}` : ""}${time ? ` ${time}` : ""}`, summary);
-        form.reset();
-        setMinReservationDate();
+        const details = getReservationDetails();
+        const summary = buildReservationSummary(details);
+        const submitButton = form.querySelector("button[type='submit']");
+        if (submitButton) submitButton.disabled = true;
+        if (formMessage) formMessage.textContent = "Reservierung wird gesendet...";
+
+        try {
+          await sendReservationEmails(buildReservationEmailParams(details, summary));
+          form.reset();
+          setMinReservationDate();
+          if (formMessage) formMessage.textContent = "Reservierung wurde gesendet. Eine Bestaetigung wurde per E-Mail verschickt.";
+          return;
+        } catch (error) {
+          console.warn("EmailJS reservation send failed:", error);
+          openMailDraft(`Reservierungsanfrage Kinza${details.date !== "-" ? ` - ${details.date}` : ""}${details.time !== "-" ? ` ${details.time}` : ""}`, summary);
+          if (formMessage) formMessage.textContent = "Automatischer Versand ist noch nicht konfiguriert. Bitte senden Sie die geoeffnete E-Mail ab oder rufen Sie Kinza direkt an.";
+          return;
+        } finally {
+          if (submitButton) submitButton.disabled = false;
+        }
       });
     }
 
@@ -3577,7 +3633,7 @@
     }
 
     async function sendOrderEmails(params) {
-      if (!window.emailjs || !isEmailJsConfigured) {
+      if (!window.emailjs || !isOrderEmailJsConfigured) {
         throw new Error("EmailJS is not configured");
       }
 
