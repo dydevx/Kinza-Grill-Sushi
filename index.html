@@ -1348,6 +1348,28 @@
       font-weight: 700;
     }
 
+    .mail-reminder {
+      position: relative;
+      padding: 12px 14px 12px 42px;
+      border: 1px solid rgba(212, 175, 55, 0.24);
+      border-radius: var(--radius);
+      background: rgba(212, 175, 55, 0.08);
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .mail-reminder::before {
+      content: "\"";
+      position: absolute;
+      left: 15px;
+      top: 4px;
+      color: var(--gold);
+      font-family: Georgia, serif;
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+
     .order-summary {
       display: none;
       margin-top: 12px;
@@ -1673,6 +1695,10 @@
       font-size: 0.9rem;
       font-weight: 600;
       min-height: 24px;
+    }
+
+    .reservation-form .mail-reminder {
+      grid-column: 1 / -1;
     }
 
     .testimonials {
@@ -2647,6 +2673,7 @@
               <span class="order-message" id="orderMessage" role="status" aria-live="polite"></span>
             </form>
             <pre class="order-summary" id="orderSummary"></pre>
+            <p class="mail-reminder">Hinweis: Nach dem Klick auf "Bestellung per E-Mail" oeffnet sich Ihr E-Mail-Postfach. Bitte pruefen Sie den Entwurf und klicken Sie dort noch einmal auf "Senden", damit die Bestellung erfolgreich verschickt wird.</p>
           </aside>
         </div>
       </div>
@@ -2826,6 +2853,7 @@
               </button>
               <span class="form-message" id="formMessage" role="status" aria-live="polite"></span>
             </div>
+            <p class="mail-reminder">Hinweis: Nach dem Klick auf "Reservierung senden" oeffnet sich Ihr E-Mail-Postfach. Bitte pruefen Sie den Entwurf und klicken Sie dort noch einmal auf "Senden", damit die Anfrage erfolgreich verschickt wird.</p>
           </form>
         </div>
       </div>
@@ -3472,7 +3500,7 @@
         } catch (error) {
           console.warn("EmailJS reservation send failed:", error);
           openMailDraft(`Reservierungsanfrage Kinza${details.date !== "-" ? ` - ${details.date}` : ""}${details.time !== "-" ? ` ${details.time}` : ""}`, summary);
-          if (formMessage) formMessage.textContent = "Automatischer Versand ist noch nicht konfiguriert. Bitte senden Sie die geoeffnete E-Mail ab oder rufen Sie Kinza direkt an.";
+          if (formMessage) formMessage.textContent = "Ihr E-Mail-Postfach wurde geoeffnet. Bitte klicken Sie dort noch einmal auf Senden.";
           return;
         } finally {
           if (submitButton) submitButton.disabled = false;
@@ -3705,7 +3733,7 @@
         } catch (error) {
           console.warn("EmailJS order send failed:", error);
           openMailDraft(`Bestellung Kinza - ${meta.number}${details.pickup !== "-" ? ` - Abholung ${details.pickup}` : ""}`, summary);
-          if (orderMessage) orderMessage.textContent = "Automatischer Versand ist noch nicht konfiguriert. Gmail wurde mit den Bestelldaten geoeffnet.";
+          if (orderMessage) orderMessage.textContent = "Ihr E-Mail-Postfach wurde geoeffnet. Bitte klicken Sie dort noch einmal auf Senden.";
           return;
         } finally {
           if (orderSubmit) orderSubmit.disabled = cart.size === 0;
