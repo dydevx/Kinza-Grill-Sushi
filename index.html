@@ -1226,6 +1226,10 @@
       scrollbar-width: thin;
     }
 
+    .mobile-cart-summary {
+      display: none;
+    }
+
     .cart-empty {
       padding: 18px;
       border: 1px dashed rgba(255, 255, 255, 0.16);
@@ -2075,6 +2079,56 @@
         position: static;
       }
 
+      .mobile-cart-summary {
+        position: fixed;
+        left: 15px;
+        right: 15px;
+        bottom: 14px;
+        z-index: 80;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 58px;
+        padding: 10px 14px;
+        border: 1px solid rgba(212, 175, 55, 0.62);
+        border-radius: var(--radius);
+        background: rgba(17, 17, 17, 0.96);
+        color: var(--white);
+        cursor: pointer;
+        font: inherit;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(calc(100% + 20px));
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+
+      .mobile-cart-summary.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      .mobile-cart-summary-text {
+        display: grid;
+        gap: 2px;
+        text-align: left;
+      }
+
+      .mobile-cart-summary small {
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .mobile-cart-summary strong {
+        color: var(--gold);
+        font-size: 1rem;
+      }
+
       .about-image {
         aspect-ratio: 16 / 11;
       }
@@ -2677,6 +2731,14 @@
             <pre class="order-summary" id="orderSummary"></pre>
             <p class="mail-reminder">Hinweis: Nach dem Klick auf "Bestellung per E-Mail" oeffnet sich Ihr E-Mail-Postfach. Bitte pruefen Sie den Entwurf und klicken Sie dort noch einmal auf "Senden", damit die Bestellung erfolgreich verschickt wird.</p>
           </aside>
+
+          <button class="mobile-cart-summary" id="mobileCartSummary" type="button" aria-label="Warenkorb anzeigen">
+            <span class="mobile-cart-summary-text">
+              <small>Warenkorb</small>
+              <strong><span id="mobileCartCount">0</span> Gerichte</strong>
+            </span>
+            <strong id="mobileCartTotal">0,00 €</strong>
+          </button>
         </div>
       </div>
     </section>
@@ -3004,7 +3066,6 @@
     const menuPrev = document.getElementById("menuPrev");
     const menuNext = document.getElementById("menuNext");
     const menuBookMedia = window.matchMedia("(max-width: 680px)");
-    const orderMobileMedia = window.matchMedia("(max-width: 900px)");
     const menuPages = Array.from({ length: 31 }, (_, index) => `assets/menu-pages/page-${String(index + 1).padStart(2, "0")}.webp`);
     const blankMenuPage = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -3015,6 +3076,9 @@
     const cartList = document.getElementById("cartList");
     const cartCount = document.getElementById("cartCount");
     const cartTotal = document.getElementById("cartTotal");
+    const mobileCartSummary = document.getElementById("mobileCartSummary");
+    const mobileCartCount = document.getElementById("mobileCartCount");
+    const mobileCartTotal = document.getElementById("mobileCartTotal");
     const orderForm = document.getElementById("orderForm");
     const orderSubmit = document.getElementById("orderSubmit");
     const orderMessage = document.getElementById("orderMessage");
@@ -3568,6 +3632,9 @@
 
       cartCount.textContent = String(count);
       cartTotal.textContent = priceFormatter.format(total);
+      if (mobileCartSummary) mobileCartSummary.classList.toggle("is-visible", count > 0);
+      if (mobileCartCount) mobileCartCount.textContent = String(count);
+      if (mobileCartTotal) mobileCartTotal.textContent = priceFormatter.format(total);
       if (orderSubmit) orderSubmit.disabled = count === 0;
 
       if (!lines.length) {
@@ -3600,15 +3667,6 @@
       cart.set(itemId, { item, quantity: current ? current.quantity + 1 : 1 });
       if (orderMessage) orderMessage.textContent = `${item.name} wurde hinzugefügt.`;
       renderCart();
-      scrollCartIntoViewOnMobile();
-    }
-
-    function scrollCartIntoViewOnMobile() {
-      if (!cartPanel || !orderMobileMedia.matches) return;
-      cartPanel.scrollIntoView({
-        behavior: reduceMotion ? "auto" : "smooth",
-        block: "start"
-      });
     }
 
     function updateCartItem(itemId, action) {
@@ -3712,6 +3770,15 @@
         const button = event.target.closest("button[data-cart-action]");
         if (!button) return;
         updateCartItem(button.dataset.orderId, button.dataset.cartAction);
+      });
+    }
+
+    if (mobileCartSummary && cartPanel) {
+      mobileCartSummary.addEventListener("click", () => {
+        cartPanel.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "start"
+        });
       });
     }
 
