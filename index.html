@@ -1452,6 +1452,38 @@
       font-weight: 700;
     }
 
+    .order-success {
+      display: none;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid rgba(76, 175, 80, 0.42);
+      border-radius: var(--radius);
+      background: rgba(76, 175, 80, 0.12);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .order-success.is-visible {
+      display: grid;
+    }
+
+    .order-success[hidden] {
+      display: none;
+    }
+
+    .order-success strong {
+      color: #9be58f;
+      font-size: 1rem;
+    }
+
+    .order-success small {
+      color: rgba(255, 255, 255, 0.66);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
     .mail-reminder {
       position: relative;
       padding: 12px 14px 12px 42px;
@@ -1472,6 +1504,51 @@
       font-family: Georgia, serif;
       font-size: 2.4rem;
       line-height: 1;
+    }
+
+    .mail-notice {
+      position: fixed;
+      inset: 0;
+      z-index: 2100;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.78);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 180ms ease, visibility 180ms ease;
+    }
+
+    .mail-notice.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mail-notice-card {
+      width: min(520px, 100%);
+      padding: 28px;
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      border-radius: var(--radius);
+      background: #141414;
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.5);
+    }
+
+    .mail-notice-card h3 {
+      margin-bottom: 12px;
+      color: var(--white);
+      font-size: 1.36rem;
+    }
+
+    .mail-notice-card p {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 0.94rem;
+    }
+
+    .mail-notice-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 22px;
     }
 
     .order-summary {
@@ -2800,6 +2877,7 @@
               </button>
               <span class="order-message" id="orderMessage" role="status" aria-live="polite"></span>
             </form>
+            <div class="order-success" id="orderSuccess" role="status" aria-live="polite" hidden></div>
             <pre class="order-summary" id="orderSummary"></pre>
             <p class="mail-reminder">Hinweis: Nach dem Klick auf "Bestellung per E-Mail" oeffnet sich Ihr E-Mail-Postfach. Bitte pruefen Sie den Entwurf und klicken Sie dort noch einmal auf "Senden", damit die Bestellung erfolgreich verschickt wird.</p>
           </aside>
@@ -3113,6 +3191,19 @@
     <button class="lightbox-control lightbox-next" type="button" id="lightboxNext" aria-label="Nächstes Bild">›</button>
   </div>
 
+  <div class="mail-notice" id="mailNotice" aria-hidden="true" role="dialog" aria-labelledby="mailNoticeTitle">
+    <div class="mail-notice-card">
+      <h3 id="mailNoticeTitle">Bitte E-Mail-Versand abschliessen</h3>
+      <p>Bitte oeffnen Sie den E-Mail-Entwurf und klicken Sie dort auf Senden. Erst Ihre Mail-App oder Gmail verschickt die Bestellung wirklich; diese Webseite kann den Versand nicht automatisch ausloesen.</p>
+      <div class="mail-notice-actions">
+        <button class="btn btn-primary" type="button" id="mailGmailOpen">Gmail oeffnen</button>
+        <button class="btn btn-secondary" type="button" id="mailAppOpen">Mail-App oeffnen</button>
+        <button class="btn btn-secondary" type="button" id="mailSentConfirm">Ich habe gesendet</button>
+        <button class="btn btn-secondary" type="button" id="mailNoticeClose">Schliessen</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script>
     const header = document.getElementById("siteHeader");
@@ -3148,22 +3239,22 @@
     const orderForm = document.getElementById("orderForm");
     const orderSubmit = document.getElementById("orderSubmit");
     const orderMessage = document.getElementById("orderMessage");
+    const orderSuccess = document.getElementById("orderSuccess");
     const orderSummary = document.getElementById("orderSummary");
+    const mailNotice = document.getElementById("mailNotice");
+    const mailGmailOpen = document.getElementById("mailGmailOpen");
+    const mailAppOpen = document.getElementById("mailAppOpen");
+    const mailSentConfirm = document.getElementById("mailSentConfirm");
+    const mailNoticeClose = document.getElementById("mailNoticeClose");
     const mailRecipient = "kinza.pfinztal@gmail.com";
     const emailJsConfig = {
       publicKey: "YOUR_EMAILJS_PUBLIC_KEY",
       serviceId: "YOUR_EMAILJS_SERVICE_ID",
-      restaurantTemplateId: "YOUR_RESTAURANT_TEMPLATE_ID",
-      customerTemplateId: "YOUR_CUSTOMER_TEMPLATE_ID",
       reservationRestaurantTemplateId: "YOUR_RESERVATION_RESTAURANT_TEMPLATE_ID",
       reservationCustomerTemplateId: "YOUR_RESERVATION_CUSTOMER_TEMPLATE_ID"
     };
     const isConfiguredValue = (value) => value && !value.startsWith("YOUR_");
     const hasEmailJsBaseConfig = [emailJsConfig.publicKey, emailJsConfig.serviceId].every(isConfiguredValue);
-    const isOrderEmailJsConfigured = hasEmailJsBaseConfig && [
-      emailJsConfig.restaurantTemplateId,
-      emailJsConfig.customerTemplateId
-    ].every(isConfiguredValue);
     const isReservationEmailJsConfigured = hasEmailJsBaseConfig && [
       emailJsConfig.reservationRestaurantTemplateId,
       emailJsConfig.reservationCustomerTemplateId
@@ -3417,6 +3508,8 @@
       searchText: normalizeSearch(`${item.category} ${item.code} ${item.name} ${item.note}`)
     }));
     const cart = new Map();
+    let pendingOrderDraft = null;
+    let pendingOrderReceipt = null;
     let activeOrderCategory = "Alle";
 
     if (window.emailjs && hasEmailJsBaseConfig) {
@@ -3503,18 +3596,81 @@
     });
 
     function openMailDraft(subject, body) {
+      const params = [
+        `subject=${encodeURIComponent(subject)}`,
+        `body=${encodeURIComponent(body)}`
+      ].filter(Boolean).join("&");
+      const mailtoLink = `mailto:${mailRecipient}?${params}`;
+      window.location.href = mailtoLink;
+    }
+
+    function openGmailDraft(subject, body) {
       const gmailLink = new URL("https://mail.google.com/mail/");
       gmailLink.searchParams.set("view", "cm");
       gmailLink.searchParams.set("fs", "1");
       gmailLink.searchParams.set("to", mailRecipient);
       gmailLink.searchParams.set("su", subject);
       gmailLink.searchParams.set("body", body);
+      window.open(gmailLink.toString(), "_blank", "noopener,noreferrer");
+    }
 
-      const gmailWindow = window.open(gmailLink.toString(), "_blank", "noopener,noreferrer");
-      if (!gmailWindow) {
-        const mailtoLink = `mailto:${mailRecipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.location.href = mailtoLink;
+    function openPendingDraft(openDraft) {
+      if (!pendingOrderDraft) return;
+      openDraft(pendingOrderDraft.subject, pendingOrderDraft.body);
+    }
+
+    function showMailNotice() {
+      if (!mailNotice) return;
+      mailNotice.classList.add("is-open");
+      mailNotice.setAttribute("aria-hidden", "false");
+      document.body.classList.add("menu-open");
+      mailGmailOpen?.focus();
+    }
+
+    function closeMailNotice() {
+      if (!mailNotice) return;
+      mailNotice.classList.remove("is-open");
+      mailNotice.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("menu-open");
+    }
+
+    function hideOrderSuccess() {
+      if (!orderSuccess) return;
+      orderSuccess.hidden = true;
+      orderSuccess.classList.remove("is-visible");
+      orderSuccess.innerHTML = "";
+    }
+
+    function showOrderSuccess(receipt) {
+      if (!orderSuccess || !receipt) return;
+      const title = document.createElement("strong");
+      const message = document.createElement("span");
+      const note = document.createElement("small");
+      title.textContent = "Bestellung gesendet.";
+      message.textContent = `Vielen Dank, ${receipt.name}. Ihre Bestellung ${receipt.number} ueber ${receipt.total} wurde als E-Mail vorbereitet und von Ihnen als gesendet bestaetigt.`;
+      note.textContent = "Kinza prueft Ihre Bestellung und bestaetigt sie per E-Mail oder Telefon. Bitte behalten Sie Ihre Bestellnummer fuer Rueckfragen.";
+      orderSuccess.replaceChildren(title, message, note);
+      orderSuccess.hidden = false;
+      orderSuccess.classList.add("is-visible");
+    }
+
+    function confirmOrderSent() {
+      cart.clear();
+      renderCart();
+      orderForm?.reset();
+      if (orderSummary) {
+        orderSummary.textContent = "";
+        orderSummary.classList.remove("is-visible");
       }
+      if (orderMessage) {
+        orderMessage.textContent = "Vielen Dank. Kinza prueft Ihre Bestellung und bestaetigt sie per E-Mail oder Telefon.";
+      }
+      showOrderSuccess(pendingOrderReceipt);
+      pendingOrderDraft = null;
+      pendingOrderReceipt = null;
+      closeMailNotice();
+      setCartOpen(true);
+      orderSuccess?.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
     }
 
     function formatDateTime(date) {
@@ -3741,6 +3897,7 @@
     function addToCart(itemId) {
       const item = orderCatalog.find((entry) => entry.id === itemId);
       if (!item) return;
+      hideOrderSuccess();
       const current = cart.get(itemId);
       cart.set(itemId, { item, quantity: current ? current.quantity + 1 : 1 });
       if (orderMessage) orderMessage.textContent = `${item.name} wurde hinzugefügt.`;
@@ -3750,6 +3907,7 @@
     function updateCartItem(itemId, action) {
       const current = cart.get(itemId);
       if (!current) return;
+      hideOrderSuccess();
 
       if (action === "increase") {
         cart.set(itemId, { ...current, quantity: current.quantity + 1 });
@@ -3779,44 +3937,16 @@
         items,
         "",
         `Gesamt: ${priceFormatter.format(total)}`,
-        `Notiz: ${details.note}`
+        `Notiz: ${details.note}`,
+        "",
+        "Kundenbestaetigung:",
+        "Vielen Dank. Ihre Bestellung wurde erfolgreich an Kinza gesendet.",
+        "Kinza prueft Ihre Bestellung und bestaetigt sie per E-Mail oder Telefon."
       ].join("\n");
-    }
-
-    function buildOrderEmailParams(meta, details, lines, total, summary) {
-      const itemsText = lines.map(({ item, quantity }) => (
-        `${quantity}x ${item.code ? `${item.code} ` : ""}${item.name} - ${priceFormatter.format(item.price * quantity)}`
-      )).join("\n");
-
-      return {
-        restaurant_email: restaurantInfo.email,
-        restaurant_name: restaurantInfo.name,
-        order_number: meta.number,
-        created_at: meta.createdAt,
-        customer_name: details.name,
-        customer_phone: details.phone,
-        customer_email: details.email,
-        pickup_time: details.pickup,
-        order_note: details.note,
-        order_items: itemsText,
-        order_total: priceFormatter.format(total),
-        order_summary: summary,
-        reply_to: details.email
-      };
     }
 
     function wait(ms) {
       return new Promise((resolve) => window.setTimeout(resolve, ms));
-    }
-
-    async function sendOrderEmails(params) {
-      if (!window.emailjs || !isOrderEmailJsConfigured) {
-        throw new Error("EmailJS is not configured");
-      }
-
-      await emailjs.send(emailJsConfig.serviceId, emailJsConfig.restaurantTemplateId, params);
-      await wait(1100);
-      await emailjs.send(emailJsConfig.serviceId, emailJsConfig.customerTemplateId, params);
     }
 
     if (orderFilter && orderItems) {
@@ -3859,6 +3989,22 @@
       cartClose.addEventListener("click", () => setCartOpen(false));
     }
 
+    if (mailGmailOpen) {
+      mailGmailOpen.addEventListener("click", () => openPendingDraft(openGmailDraft));
+    }
+
+    if (mailAppOpen) {
+      mailAppOpen.addEventListener("click", () => openPendingDraft(openMailDraft));
+    }
+
+    if (mailSentConfirm) {
+      mailSentConfirm.addEventListener("click", confirmOrderSent);
+    }
+
+    if (mailNoticeClose) {
+      mailNoticeClose.addEventListener("click", closeMailNotice);
+    }
+
     document.addEventListener("click", (event) => {
       if (!cartPanel?.classList.contains("is-open")) return;
       if (cartPanel.contains(event.target) || mobileCartSummary?.contains(event.target)) return;
@@ -3866,12 +4012,16 @@
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setCartOpen(false);
+      if (event.key === "Escape") {
+        setCartOpen(false);
+        closeMailNotice();
+      }
     });
 
     if (orderForm) {
-      orderForm.addEventListener("submit", async (event) => {
+      orderForm.addEventListener("submit", (event) => {
         event.preventDefault();
+        hideOrderSuccess();
         if (!cart.size) {
           if (orderMessage) orderMessage.textContent = "Bitte wählen Sie zuerst mindestens ein Gericht aus.";
           return;
@@ -3888,23 +4038,26 @@
         }
 
         if (orderSubmit) orderSubmit.disabled = true;
-        if (orderMessage) orderMessage.textContent = "Bestellung wird gesendet...";
+        if (orderMessage) orderMessage.textContent = "E-Mail-Entwurf wird geoeffnet...";
 
-        try {
-          await sendOrderEmails(buildOrderEmailParams(meta, details, lines, total, summary));
-          cart.clear();
-          renderCart();
-          orderForm.reset();
-          if (orderMessage) orderMessage.textContent = "Bestellung wurde gesendet. Eine Bestaetigung wurde per E-Mail verschickt.";
-          return;
-        } catch (error) {
-          console.warn("EmailJS order send failed:", error);
-          openMailDraft(`Bestellung Kinza - ${meta.number}${details.pickup !== "-" ? ` - Abholung ${details.pickup}` : ""}`, summary);
-          if (orderMessage) orderMessage.textContent = "Ihr E-Mail-Postfach wurde geoeffnet. Bitte klicken Sie dort noch einmal auf Senden.";
-          return;
-        } finally {
-          if (orderSubmit) orderSubmit.disabled = cart.size === 0;
+        const subject = `Bestellung Kinza - ${meta.number}${details.pickup !== "-" ? ` - Abholung ${details.pickup}` : ""}`;
+        pendingOrderDraft = {
+          subject,
+          body: summary
+        };
+        pendingOrderReceipt = {
+          number: meta.number,
+          name: details.name,
+          total: priceFormatter.format(total)
+        };
+        openGmailDraft(subject, summary);
+
+        if (orderMessage) {
+          orderMessage.textContent = "Der E-Mail-Entwurf wurde erstellt. Bitte klicken Sie in Gmail oder Ihrer Mail-App auf Senden.";
         }
+        if (orderSubmit) orderSubmit.disabled = false;
+
+        window.setTimeout(showMailNotice, 500);
       });
     }
 
