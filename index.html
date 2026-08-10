@@ -11,7 +11,8 @@
   <meta property="og:description" content="Frisches Sushi, Premium-Grillgerichte und einzigartige Geschmackserlebnisse in stilvollem Ambiente.">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1400&q=80">
+  <meta property="og:image" content="https://kinzasushi.com/logo.jpg">
+  <link rel="icon" type="image/jpeg" href="logo.jpg">
   <meta name="theme-color" content="#111111">
   <title>Kinza Sushi & Grill | Japanisches Premium-Restaurant in Deutschland</title>
 
@@ -259,8 +260,8 @@
 
     .brand-logo {
       position: relative;
-      width: 72px;
-      height: 52px;
+      width: 60px;
+      height: 60px;
       display: grid;
       place-items: center;
       overflow: hidden;
@@ -272,26 +273,11 @@
     }
 
     .brand-logo::before {
-      content: "";
-      position: absolute;
-      inset: 4px;
-      border: 1px solid rgba(212, 175, 55, 0.28);
-      border-radius: 6px;
-      z-index: 1;
-      pointer-events: none;
+      content: none;
     }
 
     .brand-logo::after {
-      content: "";
-      position: absolute;
-      right: 7px;
-      top: 7px;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 18px rgba(198, 40, 40, 0.72);
-      z-index: 2;
+      content: none;
     }
 
     .brand-logo img {
@@ -299,7 +285,6 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
-      transform: scale(1.06);
     }
 
     .brand-text {
@@ -466,8 +451,9 @@
     }
 
     .hero-logo-card img {
-      height: 126px;
-      object-fit: cover;
+      height: auto;
+      aspect-ratio: 1;
+      object-fit: contain;
       object-position: center;
     }
 
@@ -1636,8 +1622,8 @@
       }
 
       .brand-logo {
-        width: 56px;
-        height: 42px;
+        width: 52px;
+        height: 52px;
       }
 
       .brand-name {
@@ -1685,7 +1671,7 @@
       }
 
       .hero-logo-card img {
-        height: 108px;
+        height: auto;
       }
 
       .quick-actions {
@@ -1830,7 +1816,7 @@
     <div class="nav-shell">
       <a class="brand" href="#startseite" aria-label="Kinza Sushi & Grill Startseite">
         <span class="brand-logo">
-          <img src="avatar.png" alt="Kinza Sushi & Grill Logo">
+          <img src="logo.jpg" alt="Kinza Sushi & Grill Logo">
         </span>
         <span class="brand-text">
           <span class="brand-name">Kinza Sushi &amp; Grill</span>
@@ -1867,7 +1853,7 @@
       <div class="container">
         <div class="hero-content reveal">
           <div class="hero-logo-card">
-            <img src="avatar.png" alt="Kinza Sushi & Grill Logo">
+            <img src="logo.jpg" alt="Kinza Sushi & Grill Logo">
             <span>Japanisches Premium-Restaurant</span>
           </div>
           <span class="hero-kicker">Kinza Sushi &amp; Grill</span>
@@ -2327,7 +2313,7 @@
         <div class="footer-brand">
           <a class="brand" href="#startseite" aria-label="Kinza Sushi & Grill Startseite">
             <span class="brand-logo">
-              <img src="avatar.png" alt="Kinza Sushi & Grill Logo">
+              <img src="logo.jpg" alt="Kinza Sushi & Grill Logo">
             </span>
             <span class="brand-text">
               <span class="brand-name">Kinza Sushi &amp; Grill</span>
